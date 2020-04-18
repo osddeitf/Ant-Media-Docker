@@ -37,6 +37,7 @@ COPY install.sh .
 RUN ./install.sh
 
 # Setup entrypoint, setting up cluster mode require `ifconfig` tool
+WORKDIR /usr/local/antmedia
 RUN apt-get update && apt-get install -y net-tools
 COPY docker-entrypoint.sh .
 ENTRYPOINT ./docker-entrypoint.sh && /bin/bash
