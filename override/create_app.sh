@@ -6,11 +6,7 @@ RED5_PROPERTIES_FILE=$APP_DIR/WEB-INF/red5-web.properties
 WEB_XML_FILE=$APP_DIR/WEB-INF/web.xml
 
 mkdir $APP_DIR 
-cp $AMS_DIR/StreamApp*.war $APP_DIR
-cd $APP_DIR
-# jar -xf StreamApp*.war
-unzip StreamApp*.war
-rm StreamApp*.war
+unzip $AMS_DIR/StreamApp*.war -d $APP_DIR
 
 OS_NAME=`uname`
 
@@ -24,9 +20,3 @@ sed -i $SED_COMPATIBILITY 's^db.name=.*^db.name='$APP_NAME_LOWER'^' $RED5_PROPER
 
 sed -i $SED_COMPATIBILITY 's^<display-name>StreamApp^<display-name>'$APP_NAME'^' $WEB_XML_FILE
 sed -i $SED_COMPATIBILITY 's^<param-value>/StreamApp^<param-value>/'$APP_NAME'^' $WEB_XML_FILE
-
-# Not to compress
-# jar -cvf $APP_NAME.war *
-# cd ..
-# cp $APP_NAME/$APP_NAME.war .
-# rm -r $APP_DIR
