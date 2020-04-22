@@ -26,14 +26,39 @@ MONGODB_PASSWORD=$(cat $SECRETS/mongodb-password)
 # Set-up license
 sed -i 's/server\.licence_key=.*/server\.licence_key='$LICENSE'/' $AMS_INSTALL_LOCATION/conf/red5.properties
 
+# Create apps (separated by semicolon ;)
+IFS=',' read -ra INIT_WEBAPPS <<< $ANT_MEDIA_WEBAPPS
+for APP in ${INIT_WEBAPPS[@]}; do
+    if [ -e $AMS_INSTALL_LOCATION/webapps/$APP ]; then
+        continue
+    fi
+    echo "Creating app with name $APP..."
+    $AMS_INSTALL_LOCATION/create_app.sh $APP $AMS_INSTALL_LOCATION
+    chown -R antmedia:antmedia $AMS_INSTALL_LOCATION/webapps/$APP
+done
+
 # Set-up cluster (if success, restart the daemon)
 $AMS_INSTALL_LOCATION/change_server_mode.sh cluster $MONGODB_SERVER $MONGODB_USERNAME $MONGODB_PASSWORD
 
 # Tweak: customize default settings base on environment variables
-APP_DIRECTORIES=$(ls -d $AMS_INSTALL_LOCATION/webapps/*/ | sed 's/\/$//')
+APP_DIRECTORIES=$(cd $AMS_INSTALL_LOCATION/webapps/ && ls -d */ | sed 's/\/$//')
+GLOBAL_APP_CONFIGURATION=/etc/ant-media/app-settings/global.properties
 
-for APP_DIRECTORY in $APP_DIRECTORIES; do
-    APP_PROPERTIES_FILE=$APP_DIRECTORY/WEB-INF/red5-web.properties
-    echo -e "\n# Custom default settings" >> $APP_PROPERTIES_FILE
-    echo "settings.listenerHookURL=$DEFAULT_LISTENER_HOOK_URL" >> $APP_PROPERTIES_FILE
+for APP_NAME in $APP_DIRECTORIES; do
+    APP_PROPERTIES_FILE=$AMS_INSTALL_LOCATION/webapps/$APP_NAME/WEB-INF/red5-web.properties
+
+    if [ $APP_NAME != root ]; then    
+        if [ -r $GLOBAL_APP_CONFIGURATION ]; then
+            echo "Restoring settings from $GLOBAL_APP_CONFIGURATION to $APP_PROPERTIES_FILE"
+            echo -e "\n# Global setting" >> $APP_PROPERTIES_FILE
+            cat $GLOBAL_APP_CONFIGURATION >> $APP_PROPERTIES_FILE
+        fi
+    fi
+
+    APP_CONFIGURATION=/etc/ant-media/app-settings/$APP_NAME.properties
+    if [ -r $APP_CONFIGURATION ]; then
+        echo "Restoring settings from $APP_CONFIGURATION to $APP_PROPERTIES_FILE"
+        echo -e "\n# Override settings" >> $APP_PROPERTIES_FILE
+        cat $APP_CONFIGURATION >> $APP_PROPERTIES_FILE
+    fi
 done

@@ -3,23 +3,26 @@ FROM alpine:3.11 AS packager
 
 # Copy and extract archive
 WORKDIR /
-RUN apk add --no-cache unzip
+RUN apk add --no-cache zip unzip
 COPY ant-media-server-enterprise.zip .
 RUN unzip ant-media-server-enterprise
 
 # Overwrite the scripts, without touching the original archive
 WORKDIR /ant-media-server
-COPY override/* ./
+COPY override ./
 
 # Extract dashboard, discard default Apps
 RUN cd webapps && \
     unzip root-1.9.1.war -d root && \
     rm LiveApp.war root-1.9.1.war WebRTCAppEE.war
 
-# Create two default apps, staging and production, create log directory
-RUN ./create_app.sh staging $(pwd) && \
-    ./create_app.sh production $(pwd) && \
-    mkdir log
+# Without log folder with proper permission, server not working
+RUN mkdir log
+
+# Modify StreamApp.war
+WORKDIR /StreamApp
+COPY StreamApp .
+RUN zip -ur /ant-media-server/StreamApp-1.9.1.war *
 
 # Stage 2: The main part
 FROM ubuntu:16.04
