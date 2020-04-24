@@ -19,9 +19,6 @@ fi
 # Read secrets
 SECRETS=/etc/ant-media
 LICENSE=$(cat $SECRETS/license)
-# MONGODB_SERVER=$MONGODB_SERVICE_NAME
-MONGODB_USERNAME=$(cat $SECRETS/mongodb-username)
-MONGODB_PASSWORD=$(cat $SECRETS/mongodb-password)
 
 # Set-up license
 sed -i 's/server\.licence_key=.*/server\.licence_key='$LICENSE'/' $AMS_INSTALL_LOCATION/conf/red5.properties
