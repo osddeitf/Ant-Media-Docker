@@ -78,7 +78,11 @@ if [ "$OS_NAME" = "Darwin" ]; then
   exit 0
 fi
 
-LOCAL_IPv4=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
+if [ $ANT_MEDIA_IPV4_IFNAME ]; then
+  LOCAL_IPv4=`ip address show $ANT_MEDIA_IPV4_IFNAME | sed -En 's/.*inet (([0-9]*\.){3}[0-9]*).*/\1/p'`
+else
+  LOCAL_IPv4=`ip address | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
+fi
 HOST_NAME=`cat /proc/sys/kernel/hostname`
 HOST_LINE="$LOCAL_IPv4 $HOST_NAME"
 
