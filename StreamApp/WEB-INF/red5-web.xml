@@ -21,6 +21,7 @@
 		<property name="secretKey" value="${storage.secretKey}" />
 		<property name="region" value="${storage.region}" />
 		<property name="storageName" value="${storage.bucket}" />
+		<property name="webhookURL" value="${storage.listenerHookURL}"/>
 	</bean>
 
 	<!-- Defines the web context -->
