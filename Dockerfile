@@ -18,6 +18,7 @@ RUN cd webapps && \
 
 # Without log folder with proper permission, server not working
 RUN mkdir log
+RUN touch log/ant-media-server.log
 
 # Modify StreamApp.war
 WORKDIR /StreamApp
@@ -43,4 +44,8 @@ RUN ./install.sh
 WORKDIR /usr/local/antmedia
 RUN apt-get update && apt-get install -y iproute2
 COPY docker-entrypoint.sh .
-ENTRYPOINT ./docker-entrypoint.sh && /bin/bash
+ENTRYPOINT ./docker-entrypoint.sh && \
+    # Update modified timestamp, force CoW (Copy-on-Write).
+    :>> /usr/local/antmedia/log/ant-media-server.log && \
+    # Watch for log
+    tail -f /usr/local/antmedia/log/ant-media-server.log
