@@ -11,23 +11,22 @@ RUN unzip ant-media-server-enterprise
 WORKDIR /ant-media-server
 COPY override ./
 
-# Extract dashboard, discard default Apps
-RUN cd webapps && \
-    unzip root-1.9.1.war -d root && \
-    rm LiveApp.war root-1.9.1.war WebRTCAppEE.war
+# Discard default Apps
+RUN cd webapps && rm -R LiveApp WebRTCAppEE
 
 # Without log folder with proper permission, server not working
-RUN mkdir log
-RUN touch log/ant-media-server.log
+RUN mkdir log && touch log/ant-media-server.log
 
 # Modify StreamApp.war
+RUN unzip StreamApp-2.0.0.war -d /StreamApp && \
+    rm StreamApp-2.0.0.war
 WORKDIR /StreamApp
 COPY StreamApp .
-RUN zip -ur /ant-media-server/StreamApp-1.9.1.war *
+RUN zip -r /ant-media-server/StreamApp-2.0.0.war *
 
 # Stage 2: The main part
 FROM ubuntu:16.04
-LABEL version "1.9.1-20200112_1830"
+LABEL version "2.0.0-20200504_1748"
 LABEL description "Ant Media Server Enterprise Edition, cluster mode"
 
 # Copy from previous stage and pre-setup permission

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-AMS_INSTALL_LOCATION=/usr/local/antmedia
+AMS_DIR=/usr/local/antmedia
 
 # By link/stack - generated service name convention
 MONGODB_ENV_NAME=${MONGODB_SERVICE_NAME}_SERVICE_HOST
@@ -21,28 +21,26 @@ SECRETS=/etc/ant-media
 LICENSE=$(cat $SECRETS/license)
 
 # Set-up license
-sed -i 's/server\.licence_key=.*/server\.licence_key='$LICENSE'/' $AMS_INSTALL_LOCATION/conf/red5.properties
+sed -i 's/server\.licence_key=.*/server\.licence_key='$LICENSE'/' $AMS_DIR/conf/red5.properties
 
-# Create apps (separated by semicolon ;)
+# Create apps (from comma separated values)
 IFS=',' read -ra INIT_WEBAPPS <<< $ANT_MEDIA_WEBAPPS
 for APP in ${INIT_WEBAPPS[@]}; do
-    if [ -e $AMS_INSTALL_LOCATION/webapps/$APP ]; then
+    if [ -e $AMS_DIR/webapps/$APP ]; then
         continue
     fi
-    echo "Creating app with name $APP..."
-    $AMS_INSTALL_LOCATION/create_app.sh $APP $AMS_INSTALL_LOCATION
-    chown -R antmedia:antmedia $AMS_INSTALL_LOCATION/webapps/$APP
+    $AMS_DIR/create_app.sh $APP
 done
 
 # Set-up cluster (if success, restart the daemon)
-$AMS_INSTALL_LOCATION/change_server_mode.sh cluster $MONGODB_SERVER $MONGODB_USERNAME $MONGODB_PASSWORD
+$AMS_DIR/change_server_mode.sh cluster $MONGODB_SERVER $MONGODB_USERNAME $MONGODB_PASSWORD
 
 # Tweak: customize default settings base on environment variables
-APP_DIRECTORIES=$(cd $AMS_INSTALL_LOCATION/webapps/ && ls -d */ | sed 's/\/$//')
+APP_DIRECTORIES=$(cd $AMS_DIR/webapps/ && ls -d */ | sed 's/\/$//')
 GLOBAL_APP_CONFIGURATION=/etc/ant-media/app-settings/global.properties
 
 for APP_NAME in $APP_DIRECTORIES; do
-    APP_PROPERTIES_FILE=$AMS_INSTALL_LOCATION/webapps/$APP_NAME/WEB-INF/red5-web.properties
+    APP_PROPERTIES_FILE=$AMS_DIR/webapps/$APP_NAME/WEB-INF/red5-web.properties
 
     if [ $APP_NAME != root ]; then    
         if [ -r $GLOBAL_APP_CONFIGURATION ]; then

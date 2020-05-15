@@ -24,13 +24,6 @@ if [ -z "$MODE" ]; then
 fi
 
 AMS_INSTALL_LOCATION=/usr/local/antmedia
-OS_NAME=`uname`
-
-if [ "$OS_NAME" = "Darwin" ]; then
-  AMS_INSTALL_LOCATION=`pwd`
-  SED_COMPATIBILITY='.bak'
-fi
-
 USE_GLOBAL_IP="false"
 
 if [ $MODE = "cluster" ]
@@ -44,39 +37,34 @@ if [ $MODE = "cluster" ]
         exit 1
       fi
     
-    sed -i $SED_COMPATIBILITY -E -e  's/(<!-- cluster start|<!-- cluster start -->)/<!-- cluster start -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
-    sed -i $SED_COMPATIBILITY -E -e  's/(cluster end -->|<!-- cluster end -->)/<!-- cluster end -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
+    sed -i -E -e  's/(<!-- cluster start|<!-- cluster start -->)/<!-- cluster start -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
+    sed -i -E -e  's/(cluster end -->|<!-- cluster end -->)/<!-- cluster end -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
         
   else
     echo "Mode: standalone"
     DB_TYPE=mapdb
     MONGO_SERVER_IP=localhost
-    sed -i $SED_COMPATIBILITY -E -e  's/(<!-- cluster start -->|<!-- cluster start)/<!-- cluster start /g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
-    sed -i $SED_COMPATIBILITY -E -e 's/(<!-- cluster end -->|cluster end -->)/cluster end -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
+    sed -i -E -e  's/(<!-- cluster start -->|<!-- cluster start)/<!-- cluster start /g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
+    sed -i -E -e 's/(<!-- cluster end -->|cluster end -->)/cluster end -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
 fi
 
 
 RED5_PROPERTIES_FILE=$AMS_INSTALL_LOCATION/conf/red5.properties
 APP_DIRECTORIES=$(ls -d $AMS_INSTALL_LOCATION/webapps/*/ | sed 's/\/$//')
 
-sed -i $SED_COMPATIBILITY 's/clusterdb.host=.*/clusterdb.host='$MONGO_SERVER_IP'/' $RED5_PROPERTIES_FILE
-sed -i $SED_COMPATIBILITY 's/useGlobalIp=.*/useGlobalIp='$USE_GLOBAL_IP'/' $RED5_PROPERTIES_FILE
-sed -i $SED_COMPATIBILITY 's/clusterdb.user=.*/clusterdb.user='$3'/' $RED5_PROPERTIES_FILE
-sed -i $SED_COMPATIBILITY 's/clusterdb.password=.*/clusterdb.password='$4'/' $RED5_PROPERTIES_FILE
+sed -i 's/clusterdb.host=.*/clusterdb.host='$MONGO_SERVER_IP'/' $RED5_PROPERTIES_FILE
+sed -i 's/useGlobalIp=.*/useGlobalIp='$USE_GLOBAL_IP'/' $RED5_PROPERTIES_FILE
+sed -i 's/clusterdb.user=.*/clusterdb.user='$3'/' $RED5_PROPERTIES_FILE
+sed -i 's/clusterdb.password=.*/clusterdb.password='$4'/' $RED5_PROPERTIES_FILE
 
 for APP_DIRECTORY in $APP_DIRECTORIES; do
   APP_PROPERTIES_FILE=$APP_DIRECTORY/WEB-INF/red5-web.properties
-  sed -i $SED_COMPATIBILITY 's/db.type=.*/db.type='$DB_TYPE'/' $APP_PROPERTIES_FILE
-  sed -i $SED_COMPATIBILITY 's/db.host=.*/db.host='$MONGO_SERVER_IP'/' $APP_PROPERTIES_FILE
-  sed -i $SED_COMPATIBILITY 's/db.user=.*/db.user='$3'/' $APP_PROPERTIES_FILE
-  sed -i $SED_COMPATIBILITY 's/db.password=.*/db.password='$4'/' $APP_PROPERTIES_FILE
+  sed -i 's/db.type=.*/db.type='$DB_TYPE'/' $APP_PROPERTIES_FILE
+  sed -i 's/db.host=.*/db.host='$MONGO_SERVER_IP'/' $APP_PROPERTIES_FILE
+  sed -i 's/db.user=.*/db.user='$3'/' $APP_PROPERTIES_FILE
+  sed -i 's/db.password=.*/db.password='$4'/' $APP_PROPERTIES_FILE
 done
 
-
-if [ "$OS_NAME" = "Darwin" ]; then
-  echo "You can re-start Ant Media Server on your Macos"
-  exit 0
-fi
 
 if [ $ANT_MEDIA_IPV4_IFNAME ]; then
   LOCAL_IPv4=`ip address show $ANT_MEDIA_IPV4_IFNAME | sed -En 's/.*inet (([0-9]*\.){3}[0-9]*).*/\1/p'`
