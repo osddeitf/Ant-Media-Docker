@@ -2,20 +2,17 @@
 This repository is `Dockerfile` for building customized Ant Media Server Enterprise edition.
 
 - This repo will not included installation `.zip` archive, for privacy reason.
-- Community edition should work, too, but lacks of most feature, though tweaking the `Dockerfile` is necessary.
+- Community edition should work, too, but lacks of most feature, though tweaking the `Dockerfile` might necessary.
 - Feel free to fork and edit this file to match your use case and expectation.
 
 ## Features
 - Automatic setup cluster, currently works well on Kubernetes..
 - Support MinIO integration hacks. See my repo: [v1.0.1](https://github.com/osddeitf/Ant-Media-MinIO-Integration/tree/v1.0.1).
-- Webapps creation on start-up via `ANT_MEDIA_WEBAPPS`.
-- Webapps volume-based configuration, no need to manually edit inside container.
+- Application creation on start-up via `ANT_MEDIA_WEBAPPS`, rather than default `WebRTCAppEE` or `LiveApp`.
+- Application configuration overwrite using mount points, no need to manually edit inside container.
 
 ## Requirements
-- Installation script, which can be found at: https://github.com/ant-media/Scripts.
-- Ant Media `.zip` archive. Community or Enterprise edition, which suit your need.
-
-Reference: [Ant Media installation guide](https://github.com/ant-media/Ant-Media-Server/wiki/Installation)
+- Ant Media `.zip` archive, either is Community or Enterprise edition, which suit your need.
 
 ## Environment variables
 - `MONGODB_HOST`: mongodb ip / hostname.
