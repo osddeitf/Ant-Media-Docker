@@ -26,43 +26,41 @@ fi
 AMS_INSTALL_LOCATION=/usr/local/antmedia
 USE_GLOBAL_IP="false"
 
-if [ $MODE = "cluster" ]
-  then
-    echo "Mode: cluster"
-    DB_TYPE=mongodb
-    MONGO_SERVER_IP=$2
-      if [ -z "$MONGO_SERVER_IP" ]; then
-        echo "No Mongo DB Server specified. Missing parameter"
-        usage
-        exit 1
-      fi
-    
-    sed -i -E -e  's/(<!-- cluster start|<!-- cluster start -->)/<!-- cluster start -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
-    sed -i -E -e  's/(cluster end -->|<!-- cluster end -->)/<!-- cluster end -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
-        
-  else
-    echo "Mode: standalone"
-    DB_TYPE=mapdb
-    MONGO_SERVER_IP=localhost
-    sed -i -E -e  's/(<!-- cluster start -->|<!-- cluster start)/<!-- cluster start /g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
-    sed -i -E -e 's/(<!-- cluster end -->|cluster end -->)/cluster end -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
+if [ $MODE = "cluster" ]; then
+  echo "Mode: cluster"
+  DB_TYPE=mongodb
+  MONGO_SERVER_IP=$2
+    if [ -z "$MONGO_SERVER_IP" ]; then
+      echo "No Mongo DB Server specified. Missing parameter"
+      usage
+      exit 1
+    fi
+
+  sed -i -E -e  's/(<!-- cluster start|<!-- cluster start -->)/<!-- cluster start -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
+  sed -i -E -e  's/(cluster end -->|<!-- cluster end -->)/<!-- cluster end -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
+
+else
+  echo "Mode: standalone"
+  DB_TYPE=mapdb
+  MONGO_SERVER_IP=localhost
+  sed -i -E -e  's/(<!-- cluster start -->|<!-- cluster start)/<!-- cluster start /g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
+  sed -i -E -e 's/(<!-- cluster end -->|cluster end -->)/cluster end -->/g' $AMS_INSTALL_LOCATION/conf/jee-container.xml
 fi
 
 
-RED5_PROPERTIES_FILE=$AMS_INSTALL_LOCATION/conf/red5.properties
-APP_DIRECTORIES=$(ls -d $AMS_INSTALL_LOCATION/webapps/*/ | sed 's/\/$//')
+LIST_APPS=`ls -d $AMS_INSTALL_LOCATION/webapps/*/`
 
-sed -i 's/clusterdb.host=.*/clusterdb.host='$MONGO_SERVER_IP'/' $RED5_PROPERTIES_FILE
-sed -i 's/useGlobalIp=.*/useGlobalIp='$USE_GLOBAL_IP'/' $RED5_PROPERTIES_FILE
-sed -i 's/clusterdb.user=.*/clusterdb.user='$3'/' $RED5_PROPERTIES_FILE
-sed -i 's/clusterdb.password=.*/clusterdb.password='$4'/' $RED5_PROPERTIES_FILE
+sed -i 's#clusterdb.host=.*#clusterdb.host='$MONGO_SERVER_IP'#' $AMS_INSTALL_LOCATION/conf/red5.properties
+sed -i 's/useGlobalIp=.*/useGlobalIp='$USE_GLOBAL_IP'/' $AMS_INSTALL_LOCATION/conf/red5.properties
+sed -i 's/clusterdb.user=.*/clusterdb.user='$3'/' $AMS_INSTALL_LOCATION/conf/red5.properties
+sed -i 's/clusterdb.password=.*/clusterdb.password='$4'/' $AMS_INSTALL_LOCATION/conf/red5.properties
 
-for APP_DIRECTORY in $APP_DIRECTORIES; do
-  APP_PROPERTIES_FILE=$APP_DIRECTORY/WEB-INF/red5-web.properties
-  sed -i 's/db.type=.*/db.type='$DB_TYPE'/' $APP_PROPERTIES_FILE
-  sed -i 's/db.host=.*/db.host='$MONGO_SERVER_IP'/' $APP_PROPERTIES_FILE
-  sed -i 's/db.user=.*/db.user='$3'/' $APP_PROPERTIES_FILE
-  sed -i 's/db.password=.*/db.password='$4'/' $APP_PROPERTIES_FILE
+for i in $LIST_APPS; do
+  target=$i/WEB-INF/red5-web.properties
+  sed -i 's/db.type=.*/db.type='$DB_TYPE'/' $target
+  sed -i 's#db.host=.*#db.host='$MONGO_SERVER_IP'#' $target
+  sed -i 's/db.user=.*/db.user='$3'/' $target
+  sed -i 's/db.password=.*/db.password='$4'/' $target
 done
 
 
@@ -80,14 +78,14 @@ HOST_NAME=`cat /proc/sys/kernel/hostname`
 HOST_LINE="$LOCAL_IPv4 $HOST_NAME"
 
 # Change /etc/hosts file
-# In docker changing /etc/hosts produces device or resource busy error. 
+# In docker changing /etc/hosts produces device or resource busy error.
 # Above commands takes care the changing host file
 
-# temp hosts file  
+# temp hosts file
 NEW_HOST_FILE=~/.hosts.new
 # cp hosts file
-cp /etc/hosts $NEW_HOST_FILE  
-# delete hostname line from the file  
+cp /etc/hosts $NEW_HOST_FILE
+# delete hostname line from the file
 sed -i '/'$HOST_NAME'/d' $NEW_HOST_FILE
 # add host line to the file
 echo  "$HOST_LINE" | tee -a $NEW_HOST_FILE

@@ -20,14 +20,15 @@ fi
 
 #set the app name
 APP_NAME=$1
-AMS_DIR=/usr/local/antmedia
 APP_NAME_LOWER=$(echo $APP_NAME | awk '{print tolower($0)}')
+
+AMS_DIR=/usr/local/antmedia
 APP_DIR=$AMS_DIR/webapps/$APP_NAME
 RED5_PROPERTIES_FILE=$APP_DIR/WEB-INF/red5-web.properties
 WEB_XML_FILE=$APP_DIR/WEB-INF/web.xml
 
 mkdir $APP_DIR
-unzip $AMS_DIR/StreamApp*.war -d $APP_DIR
+unzip -q $AMS_DIR/StreamApp*.war -d $APP_DIR
 
 sed -i 's^webapp.dbName=.*^webapp.dbName='$APP_NAME_LOWER'.db^' $RED5_PROPERTIES_FILE
 sed -i 's^webapp.contextPath=.*^webapp.contextPath=/'$APP_NAME'^' $RED5_PROPERTIES_FILE
