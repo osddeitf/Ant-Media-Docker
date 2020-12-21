@@ -67,7 +67,12 @@ done
 
 
 if [ $ANT_MEDIA_IPV4_IFNAME ]; then
+  # Fail if not found
+  set -o pipefail
   LOCAL_IPv4=`ip address show $ANT_MEDIA_IPV4_IFNAME | sed -En 's/.*inet (([0-9]*\.){3}[0-9]*).*/\1/p'`
+  if [ $? != 0 ]; then
+    exit 1
+  fi
 else
   LOCAL_IPv4=`ip address | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*).*/\2/p'`
 fi
