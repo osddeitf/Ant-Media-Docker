@@ -18,16 +18,21 @@ RUN cd webapps && rm -R LiveApp WebRTCAppEE
 RUN mkdir log && touch log/ant-media-server.log
 
 # Modify StreamApp.war
-RUN unzip StreamApp-2.0.0.war -d /StreamApp && \
-    rm StreamApp-2.0.0.war
+RUN unzip StreamApp-2.2.1.war -d /StreamApp && \
+    rm StreamApp-2.2.1.war
 WORKDIR /StreamApp
 COPY StreamApp .
-RUN zip -r /ant-media-server/StreamApp-2.0.0.war *
+RUN zip -r /ant-media-server/StreamApp-2.2.1.war *
 
 # Stage 2: The main part
-FROM ubuntu:16.04
-LABEL version "2.0.0-20200504_1748"
+FROM ubuntu:20.04
+LABEL version "2.2.1-20201029_2042"
 LABEL description "Ant Media Server Enterprise Edition, cluster mode"
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        openjdk-11-jdk unzip jsvc libapr1 libssl-dev libva-drm2 libva-x11-2 libvdpau-dev libcrystalhd-dev \
+        openjfx libopenjfx-java libopenjfx-jni
 
 # Copy from previous stage and pre-setup permission
 RUN useradd -d /usr/local/antmedia/ -s /bin/false -r antmedia

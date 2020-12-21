@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # @author: osddeitf
+# @version: 2.2.1-20201029_2042
 # Custom, simplified install script for optimize Dockerfile output image size
-# Original version: https://github.com/ant-media/Scripts/blob/dc9c8076909574e53eaf61268b7f69f78dca3a87/install_ant-media-server.sh
+# Original version: https://github.com/ant-media/Scripts/blob/2690dd89517fda3eadbd9ddf2e5ea66e2950bb09/install_ant-media-server.sh
 
 AMS_BASE=/usr/local/antmedia
 
@@ -19,18 +20,15 @@ if ! [ -x "$(command -v sudo)" ]; then
   SUDO=""
 fi
 
-# Install dependencies
-$SUDO apt-get update -y
-check
-
-$SUDO apt-get install openjdk-8-jdk openjfx jsvc unzip -y
-check
-
-
-$SUDO sed -i '/JAVA_HOME="\/usr\/lib\/jvm\/java-8-oracle"/c\JAVA_HOME="\/usr\/lib\/jvm\/java-8-openjdk-amd64"'  $AMS_BASE/antmedia
-check
+# use ln because of the jcvr bug: https://stackoverflow.com/questions/25868313/jscv-cannot-locate-jvm-library-file 
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64/
+$SUDO mkdir -p $JAVA_HOME/lib/amd64
+$SUDO ln -sfn $JAVA_HOME/lib/server $JAVA_HOME/lib/amd64/
 
 # Install service
+$SUDO cp $AMS_BASE/antmedia.service /lib/systemd/system/
+$SUDO chmod 644 /lib/systemd/system/antmedia.service
+
 $SUDO cp $AMS_BASE/antmedia /etc/init.d/
 check
 
@@ -40,7 +38,7 @@ check
 $SUDO update-rc.d antmedia enable
 check
 
-# The following commands are handled in advance, see `Dockerfile`
+# The following commands are handled in advance (for less layers), see `Dockerfile`
 # $SUDO mkdir $AMS_BASE/log
 # check
 #
