@@ -2,26 +2,8 @@
 
 AMS_DIR=/usr/local/antmedia
 
-# By link/stack - generated service name convention
-MONGODB_ENV_NAME=${MONGODB_SERVICE_NAME}_SERVICE_HOST
-MONGODB_ENV_NAME_ALT=${MONGODB_SERVICE_NAME}_LOADBALANCER_TCP_SERVICE_HOST
-
-# Get 
-if [ ${!MONGODB_ENV_NAME} ]; then
-    MONGODB_SERVER=${!MONGODB_ENV_NAME}
-elif [ ${!MONGODB_ENV_NAME_ALT} ]; then
-    MONGODB_SERVER=${!MONGODB_ENV_NAME_ALT}
-else
-    echo "Could not find MongoDB service running in cluster" > /dev/stderr
-    exit 1
-fi
-
-# Read secrets
-SECRETS=/etc/ant-media
-LICENSE=$(cat $SECRETS/license)
-
 # Set-up license
-sed -i 's/server\.licence_key=.*/server\.licence_key='$LICENSE'/' $AMS_DIR/conf/red5.properties
+sed -i 's/server\.licence_key=.*/server\.licence_key='$ANT_MEDIA_LICENSE'/' $AMS_DIR/conf/red5.properties
 
 # Create apps (from comma separated values)
 IFS=',' read -ra INIT_WEBAPPS <<< $ANT_MEDIA_WEBAPPS
@@ -33,7 +15,7 @@ for APP in ${INIT_WEBAPPS[@]}; do
 done
 
 # Set-up cluster (if success, restart the daemon)
-$AMS_DIR/change_server_mode.sh cluster $MONGODB_SERVER $MONGODB_USERNAME $MONGODB_PASSWORD
+$AMS_DIR/change_server_mode.sh cluster $MONGODB_HOST $MONGODB_USERNAME $MONGODB_PASSWORD
 
 # Tweak: customize default settings base on environment variables
 APP_DIRECTORIES=$(cd $AMS_DIR/webapps/ && ls -d */ | sed 's/\/$//')
