@@ -14,9 +14,6 @@ COPY override ./
 # Discard default Apps
 RUN cd webapps && rm -R LiveApp WebRTCAppEE
 
-# Without log folder with proper permission, server not working
-RUN mkdir log && touch log/ant-media-server.log
-
 # Modify StreamApp.war
 RUN unzip StreamApp-2.2.1.war -d /StreamApp && \
     rm StreamApp-2.2.1.war
@@ -39,17 +36,8 @@ RUN useradd -d /usr/local/antmedia/ -s /bin/false -r antmedia
 COPY --from=packager --chown=antmedia:antmedia \
     /ant-media-server /usr/local/antmedia
 
-# Run install scripts
-WORKDIR /
-COPY install.sh .
-RUN ./install.sh
-
 # Setup entrypoint, setting up cluster mode require `ifconfig` tool
 WORKDIR /usr/local/antmedia
 RUN apt-get update && apt-get install -y iproute2
 COPY docker-entrypoint.sh .
-ENTRYPOINT ./docker-entrypoint.sh && \
-    # Update modified timestamp, force CoW (Copy-on-Write).
-    :>> /usr/local/antmedia/log/ant-media-server.log && \
-    # Watch for log
-    tail -f /usr/local/antmedia/log/ant-media-server.log
+ENTRYPOINT ./docker-entrypoint.sh

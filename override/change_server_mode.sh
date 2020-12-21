@@ -95,9 +95,3 @@ echo  "$HOST_LINE" | tee -a $NEW_HOST_FILE
 cp -f $NEW_HOST_FILE /etc/hosts
 # remove temp hosts file
 rm $NEW_HOST_FILE
-
-echo "Ant Media Server is restarting in $MODE mode."
-#service antmedia restart does not work if daemon is not running so that stop and start
-service antmedia stop
-service antmedia start
-

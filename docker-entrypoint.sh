@@ -14,9 +14,6 @@ for APP in ${INIT_WEBAPPS[@]}; do
     $AMS_DIR/create_app.sh $APP
 done
 
-# Set-up cluster (if success, restart the daemon)
-$AMS_DIR/change_server_mode.sh cluster $MONGODB_HOST $MONGODB_USERNAME $MONGODB_PASSWORD
-
 # Tweak: customize default settings base on environment variables
 APP_DIRECTORIES=$(cd $AMS_DIR/webapps/ && ls -d */ | sed 's/\/$//')
 GLOBAL_APP_CONFIGURATION=/etc/ant-media/app-settings/global.properties
@@ -39,3 +36,7 @@ for APP_NAME in $APP_DIRECTORIES; do
         cat $APP_CONFIGURATION >> $APP_PROPERTIES_FILE
     fi
 done
+
+# Set-up cluster and start the server
+$AMS_DIR/change_server_mode.sh cluster $MONGODB_HOST $MONGODB_USERNAME $MONGODB_PASSWORD \
+&& ./start.sh
