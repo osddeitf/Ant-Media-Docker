@@ -37,6 +37,10 @@ for APP_NAME in $APP_DIRECTORIES; do
     fi
 done
 
+if [ ! -z "$INSTANCE_ID" ]; then
+    printf "$INSTANCE_ID" > $AMS_DIR/conf/instanceId
+fi
+
 # Set-up cluster and start the server
 $AMS_DIR/change_server_mode.sh cluster $MONGODB_HOST $MONGODB_USERNAME $MONGODB_PASSWORD \
 && ./start.sh
