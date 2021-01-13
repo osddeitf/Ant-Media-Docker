@@ -7,7 +7,7 @@ This repository is `Dockerfile` for building customized Ant Media Server Enterpr
 
 ## Features
 - Automatic setup cluster, currently works well on Kubernetes..
-- Support MinIO integration hacks. See my repo: [v1.0.1](https://github.com/osddeitf/Ant-Media-MinIO-Integration/tree/v1.0.1).
+- Support S3-compatible video push via `settings.muxerFinishScript`.
 - Application creation on start-up via `ANT_MEDIA_WEBAPPS`, rather than default `WebRTCAppEE` or `LiveApp`.
 - Application configuration overwrite using mount points, no need to manually edit inside container.
 
