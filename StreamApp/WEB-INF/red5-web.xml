@@ -15,15 +15,6 @@
 	
 	<bean id="app.settings" class="io.antmedia.AppSettings" />
 
-	<bean id="app.storageClient" class="com.osddeitf.antmedia.MinioStorageClient">
-		<property name="url" value="${storage.url}" />
-		<property name="accessKey" value="${storage.accessKey}" />
-		<property name="secretKey" value="${storage.secretKey}" />
-		<property name="region" value="${storage.region}" />
-		<property name="storageName" value="${storage.bucket}" />
-		<property name="webhookURL" value="${storage.listenerHookURL}"/>
-	</bean>
-
 	<!-- Defines the web context -->
 	<bean id="web.context" class="org.red5.server.Context" autowire="byType" />
 
